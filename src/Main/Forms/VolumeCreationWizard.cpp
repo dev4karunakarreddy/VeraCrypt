@@ -560,7 +560,7 @@ namespace VeraCrypt
 
 		case Step::VolumePassword:
 			{
-				VolumePasswordWizardPage *page = new VolumePasswordWizardPage (GetPageParent(), Password, Keyfiles);
+				VolumePasswordWizardPage *page = new VolumePasswordWizardPage (GetPageParent(), Password, Keyfiles, true, !OuterVolume && SelectedVolumeType == VolumeType::Normal);
 				page->EnableUsePim (); // force displaying "Use PIM"
 				page->SetPimSelected (Pim > 0);
 
@@ -1203,6 +1203,7 @@ namespace VeraCrypt
 				try
 				{
 					Password = page->GetPassword();
+					SafeguardPassword = page->GetSafeguardPassword();
 				}
 				catch (PasswordException& e)
 				{
@@ -1466,6 +1467,7 @@ namespace VeraCrypt
 						options->SectorSize = SectorSize;
 						options->EA = SelectedEncryptionAlgorithm;
 						options->Password = Password;
+						options->SafeguardPassword = SafeguardPassword;
 						options->Pim = Pim;
 						options->Keyfiles = Keyfiles;
 						options->Path = SelectedVolumePath;
@@ -1521,6 +1523,7 @@ namespace VeraCrypt
 
 			// clear saved credentials
 			Password.reset();
+			SafeguardPassword.reset();
 			OuterPassword.reset();
 			burn (&Pim, sizeof (Pim));
 			burn (&OuterPim, sizeof (OuterPim));

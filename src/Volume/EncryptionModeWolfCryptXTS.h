@@ -34,6 +34,13 @@ namespace VeraCrypt
 		virtual shared_ptr <EncryptionMode> GetNew () const { return shared_ptr <EncryptionMode> (new EncryptionModeWolfCryptXTS); }
 		virtual void SetCiphers (const CipherList &ciphers);
 	        virtual void SetKey (const ConstBufferPtr &key);
+		virtual void EraseKey ()
+		{
+			SecondaryKey.Erase();
+			foreach (shared_ptr <Cipher> cipher, SecondaryCiphers)
+				cipher->EraseKey();
+			EncryptionMode::EraseKey();
+		}
 
 	protected:
 		void DecryptBuffer (uint8 *data, uint64 length, uint64 startDataUnitNo) const;

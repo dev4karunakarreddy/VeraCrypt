@@ -112,6 +112,8 @@ namespace VeraCrypt
 		parser.AddSwitch (L"",	L"non-interactive",		_("Do not interact with user"));
 		parser.AddSwitch (L"",  L"stdin",				_("Read password from standard input"));
 		parser.AddOption (L"p", L"password",			_("Password"));
+		parser.AddOption (L"",  L"safeguard-password",  _("SOS password for new normal volume (use PIM 0 and no keyfiles to erase)"));
+		parser.AddOption (L"",  L"sos-password",        _("SOS password for new normal volume (use PIM 0 and no keyfiles to erase)"));
 		parser.AddOption (L"",  L"pim",					_("PIM"));
 		parser.AddOption (L"",	L"protect-hidden",		_("Protect hidden volume"));
 		parser.AddOption (L"",	L"protection-hash",		_("Header key derivation algorithm for protected hidden volume"));
@@ -539,6 +541,16 @@ namespace VeraCrypt
 			if (Preferences.UseStandardInput)
 				throw_err (L"--password cannot be used with --stdin");
 			ArgPassword = ToUTF8Password (str.c_str(), -1, ArgUseLegacyPassword? VolumePassword::MaxLegacySize : VolumePassword::MaxSize);
+		}
+
+		if (parser.Found (L"safeguard-password") && parser.Found (L"sos-password"))
+			throw_err (_("Specify only one SOS password option."));
+
+		if (parser.Found (L"safeguard-password", &str) || parser.Found (L"sos-password", &str))
+		{
+			if (ArgCommand != CommandId::CreateVolume)
+				throw_err (_("SOS password options are only valid when creating a volume."));
+			ArgSafeguardPassword = ToUTF8Password (str.c_str(), -1, ArgUseLegacyPassword? VolumePassword::MaxLegacySize : VolumePassword::MaxSize);
 		}
 
 		if (parser.Found (L"pim", &str))

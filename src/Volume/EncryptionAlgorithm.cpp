@@ -26,6 +26,13 @@ namespace VeraCrypt
 	{
 	}
 
+	void EncryptionAlgorithm::EraseKey ()
+	{
+		foreach (shared_ptr <Cipher> cipher, Ciphers)
+			cipher->EraseKey();
+		if (Mode) Mode->EraseKey();
+	}
+
 	void EncryptionAlgorithm::Decrypt (uint8 *data, uint64 length) const
 	{
 		if_debug (ValidateState ());

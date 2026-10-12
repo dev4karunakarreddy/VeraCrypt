@@ -26,7 +26,7 @@ namespace VeraCrypt
 		static CachedPasswordList GetPasswords ();
 		static bool IsEmpty () { return CachedPasswords.empty(); }
 		static void Store (const VolumePassword &newPassword);
-		static void Clear () { CachedPasswords.clear(); }
+		static void Clear ();
 		static const size_t Capacity = 4;
 
 	protected:

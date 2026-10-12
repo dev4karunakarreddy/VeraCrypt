@@ -36,6 +36,7 @@ namespace VeraCrypt
 		uint8 *DataPtr () const { return PasswordBuffer; }
 		bool IsEmpty () const { return PasswordSize == 0; }
 		size_t Size () const { return PasswordSize; }
+		void Erase () { PasswordBuffer.Erase(); PasswordSize = 0; }
 		void Set (const uint8 *password, size_t size);
 		void Set (const VolumePassword &password);
 

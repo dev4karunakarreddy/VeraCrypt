@@ -628,6 +628,8 @@ namespace VeraCrypt
 		EX2MSG (PartitionDeviceRequired,			LangString["LINUX_EX2MSG_PARTITIONDEVICEREQUIRED"]);
 		EX2MSG (ProtectionPasswordIncorrect,		LangString["LINUX_EX2MSG_PROTECTIONPASSWORDINCORRECT"]);
 		EX2MSG (ProtectionPasswordKeyfilesIncorrect, LangString["LINUX_EX2MSG_PROTECTIONPASSWORDKEYFILESINCORRECT"]);
+		EX2MSG (SafeguardWipeFailed,				LangString["SAFEGUARD_WIPE_FAILED"]);
+		EX2MSG (SafeguardWipeTriggered,				LangString["SAFEGUARD_WIPE_TRIGGERED"]);
 		EX2MSG (RootDeviceUnavailable,				LangString["NODRIVER"]);
 		EX2MSG (SecurityTokenKeyfileAlreadyExists,	LangString["TOKEN_KEYFILE_ALREADY_EXISTS"]);
 		EX2MSG (SecurityTokenKeyfileNotFound,		LangString["TOKEN_KEYFILE_NOT_FOUND"]);
@@ -1336,6 +1338,7 @@ const FileManager fileManagers[] = {
 				options->Filesystem = cmdLine.ArgFilesystem;
 				options->Keyfiles = cmdLine.ArgKeyfiles;
 				options->Password = cmdLine.ArgPassword;
+				options->SafeguardPassword = cmdLine.ArgSafeguardPassword;
 				options->Pim = cmdLine.ArgPim;
 				options->Quick = cmdLine.ArgQuick;
 				options->Size = cmdLine.ArgSize;
@@ -1959,6 +1962,8 @@ const FileManager fileManagers[] = {
 		VC_CONVERT_EXCEPTION (PasswordLegacyUTF8TooLong);
 		VC_CONVERT_EXCEPTION (PasswordUTF8Invalid);
 		VC_CONVERT_EXCEPTION (UnportablePassword);
+		VC_CONVERT_EXCEPTION (SafeguardWipeFailed);
+		VC_CONVERT_EXCEPTION (SafeguardWipeTriggered);
 		VC_CONVERT_EXCEPTION (ElevationFailed);
 		VC_CONVERT_EXCEPTION (RootDeviceUnavailable);
 		VC_CONVERT_EXCEPTION (DriveLetterUnavailable);

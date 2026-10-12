@@ -46,6 +46,8 @@ namespace VeraCrypt
 		VC_CONVERT_EXCEPTION (PasswordLegacyUTF8TooLong);
 		VC_CONVERT_EXCEPTION (PasswordUTF8Invalid);
 		VC_CONVERT_EXCEPTION (UnportablePassword);
+		VC_CONVERT_EXCEPTION (SafeguardWipeFailed);
+		VC_CONVERT_EXCEPTION (SafeguardWipeTriggered);
 		VC_CONVERT_EXCEPTION (ElevationFailed);
 		VC_CONVERT_EXCEPTION (RootDeviceUnavailable);
 		VC_CONVERT_EXCEPTION (DriveLetterUnavailable);

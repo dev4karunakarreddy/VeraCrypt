@@ -19,6 +19,13 @@
 
 namespace VeraCrypt
 {
+	void EncryptionMode::EraseKey ()
+	{
+		foreach (shared_ptr <Cipher> cipher, Ciphers)
+			cipher->EraseKey();
+		KeySet = false;
+	}
+
 	EncryptionMode::EncryptionMode () : KeySet (false), SectorOffset (0)
 	{
 	}

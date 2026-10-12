@@ -188,7 +188,19 @@ namespace VeraCrypt
 
 					// Header key
 					SecureBuffer hiddenHeaderKey (VolumeHeader::GetLargestSerializedKeySize());
-					RandomNumberGenerator::GetData (hiddenHeaderKey);
+					if (Options->SafeguardPassword && !Options->SafeguardPassword->IsEmpty())
+					{
+						hiddenHeaderKey.Allocate (VolumeHeader::GetHeaderKeyDerivationSize (Options->VolumeHeaderKdf));
+						int res = Options->VolumeHeaderKdf->DeriveKey (hiddenHeaderKey, *Options->SafeguardPassword, 0, hiddenSalt);
+						if (res != 0)
+							throw ExternalException (SRC_POS, Options->VolumeHeaderKdf->GetDerivationFailureMessage (res));
+						headerOptions.Flags = TC_HEADER_FLAG_SAFEGUARD_VOLUME;
+					}
+					else
+					{
+						RandomNumberGenerator::GetData (hiddenHeaderKey);
+						headerOptions.Flags = 0;
+					}
 					headerOptions.HeaderKey = hiddenHeaderKey;
 
 					hiddenHeader->Create (backupHeader, headerOptions);
@@ -225,6 +237,15 @@ namespace VeraCrypt
 
 	void VolumeCreator::CreateVolume (shared_ptr <VolumeCreationOptions> options)
 	{
+		// Validate SOS settings before opening (and potentially truncating) the host.
+		if (options->SafeguardPassword && !options->SafeguardPassword->IsEmpty())
+		{
+			if (options->Type != VolumeType::Normal)
+				throw ParameterIncorrect (SRC_POS);
+			if (options->Password && *options->SafeguardPassword == *options->Password)
+				throw ParameterIncorrect (SRC_POS);
+		}
+
 		EncryptionTest::TestAll();
 		SizeDone.Set (0);
 		Stage.Set (ProgressStage::NotStarted);
@@ -395,7 +416,19 @@ namespace VeraCrypt
 
 				// Header key
 				SecureBuffer hiddenHeaderKey (VolumeHeader::GetLargestSerializedKeySize());
-				RandomNumberGenerator::GetData (hiddenHeaderKey);
+				if (options->SafeguardPassword && !options->SafeguardPassword->IsEmpty())
+				{
+					hiddenHeaderKey.Allocate (VolumeHeader::GetHeaderKeyDerivationSize (options->VolumeHeaderKdf));
+					int res = options->VolumeHeaderKdf->DeriveKey (hiddenHeaderKey, *options->SafeguardPassword, 0, hiddenSalt);
+					if (res != 0)
+						throw ExternalException (SRC_POS, options->VolumeHeaderKdf->GetDerivationFailureMessage (res));
+					headerOptions.Flags = TC_HEADER_FLAG_SAFEGUARD_VOLUME;
+				}
+				else
+				{
+					RandomNumberGenerator::GetData (hiddenHeaderKey);
+					headerOptions.Flags = 0;
+				}
 				headerOptions.HeaderKey = hiddenHeaderKey;
 
 				hiddenHeader->Create (headerBuffer, headerOptions);

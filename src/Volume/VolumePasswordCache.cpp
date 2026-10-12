@@ -14,6 +14,13 @@
 
 namespace VeraCrypt
 {
+	void VolumePasswordCache::Clear ()
+	{
+		foreach (shared_ptr <VolumePassword> password, CachedPasswords)
+			password->Erase();
+		CachedPasswords.clear();
+	}
+
 	CachedPasswordList VolumePasswordCache::GetPasswords ()
 	{
 		CachedPasswordList passwords;

@@ -42,6 +42,7 @@ namespace VeraCrypt
 
 	struct VolumeHeaderCreationOptions
 	{
+		VolumeHeaderCreationOptions () : SectorSize (0), VolumeDataSize (0), VolumeDataStart (0), Type (VolumeType::Unknown), Flags (0) { }
 		ConstBufferPtr DataKey;
 		shared_ptr <EncryptionAlgorithm> EA;
 		shared_ptr <Pkcs5Kdf> Kdf;
@@ -51,6 +52,7 @@ namespace VeraCrypt
 		uint64 VolumeDataSize;
 		uint64 VolumeDataStart;
 		VolumeType::Enum Type;
+		uint32 Flags;
 	};
 
 	class VolumeHeader
@@ -60,6 +62,7 @@ namespace VeraCrypt
 		virtual ~VolumeHeader ();
 
 		void Create (const BufferPtr &headerBuffer, VolumeHeaderCreationOptions &options);
+		void EraseSensitiveData ();
 		bool Decrypt (const ConstBufferPtr &encryptedData, const VolumePassword &password, int pim, shared_ptr <Pkcs5Kdf> kdf, const Pkcs5KdfList &keyDerivationFunctions, const EncryptionAlgorithmList &encryptionAlgorithms, const EncryptionModeList &encryptionModes);
 		void EncryptNew (const BufferPtr &newHeaderBuffer, const ConstBufferPtr &newSalt, const ConstBufferPtr &newHeaderKey, shared_ptr <Pkcs5Kdf> newPkcs5Kdf);
 		uint64 GetEncryptedAreaStart () const { return EncryptedAreaStart; }
@@ -78,6 +81,7 @@ namespace VeraCrypt
 		VolumeTime GetVolumeCreationTime () const { return VolumeCreationTime; }
 		void SetSize (uint32 headerSize);
 		bool IsMasterKeyVulnerable () const { return XtsKeyVulnerable; }
+		bool IsSafeguard () const { return (Flags & TC_HEADER_FLAG_SAFEGUARD_VOLUME) != 0; }
 
 	protected:
 		bool DecryptWithHeaderKey (const ConstBufferPtr &encryptedData, shared_ptr <Pkcs5Kdf> pkcs5, const ConstBufferPtr &headerKey, const EncryptionAlgorithmList &encryptionAlgorithms, const EncryptionModeList &encryptionModes);

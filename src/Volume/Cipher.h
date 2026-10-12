@@ -47,6 +47,7 @@ namespace VeraCrypt
 		virtual bool IsHwSupportAvailable () const { return false; }
 		static bool IsHwSupportEnabled () { return HwSupportEnabled; }
 		virtual void SetKey (const ConstBufferPtr &key);
+		void EraseKey () { Key.Erase(); ScheduledKey.Erase(); Initialized = false; }
 
 		static const int MaxBlockSize = 16;
 

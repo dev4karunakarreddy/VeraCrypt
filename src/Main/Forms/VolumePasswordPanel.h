@@ -22,7 +22,7 @@ namespace VeraCrypt
 	class VolumePasswordPanel : public VolumePasswordPanelBase
 	{
 	public:
-		VolumePasswordPanel (wxWindow* parent, MountOptions* options, shared_ptr <VolumePassword> password, shared_ptr <KeyfileList> keyfiles, bool enableCache = false, bool enablePassword = true, bool enableKeyfiles = true, bool enableConfirmation = false, bool enablePkcs5Prf = false, bool isMountPassword = false, const wxString &passwordLabel = wxString());
+		VolumePasswordPanel (wxWindow* parent, MountOptions* options, shared_ptr <VolumePassword> password, shared_ptr <KeyfileList> keyfiles, bool enableCache = false, bool enablePassword = true, bool enableKeyfiles = true, bool enableConfirmation = false, bool enablePkcs5Prf = false, bool isMountPassword = false, const wxString &passwordLabel = wxString(), bool enableSafeguard = false);
 		virtual ~VolumePasswordPanel ();
 
 		void AddKeyfile (shared_ptr <Keyfile> keyfile);
@@ -40,6 +40,9 @@ namespace VeraCrypt
 		void SetPasswordVisible (bool visible);
 		void SetVolumePim (int pim);
 		bool PasswordsMatch () const;
+		shared_ptr <VolumePassword> GetSafeguardPassword (bool bForceLegacyPassword = false) const;
+		bool SafeguardPasswordsMatch () const;
+		bool IsSafeguardSelected () const;
 		void EnableUsePim (bool pimOnlyDisplay = false);
 		bool IsUsePimChecked () const { return PimCheckBox->GetValue (); }
 		void SetUsePimChecked (bool checked) const { PimCheckBox->SetValue (checked); }
@@ -63,6 +66,7 @@ namespace VeraCrypt
 		void OnTextChanged (wxCommandEvent& event) { OnUpdate(); }
 		void OnPimChanged  (wxCommandEvent& event) { OnUpdate(); }
 		void OnUsePimCheckBoxClick( wxCommandEvent& event );
+		void OnSafeguardCheckBoxClick( wxCommandEvent& event );
 		void OnUpdate () { UpdateEvent.Raise(); }
 		void OnUseKeyfilesCheckBoxClick (wxCommandEvent& event) { OnUpdate(); }
 		void WipeTextCtrl (wxTextCtrl *textCtrl);
@@ -70,6 +74,12 @@ namespace VeraCrypt
 		shared_ptr <KeyfileList> Keyfiles;
 		shared_ptr <Functor> UpdateCallback;
 		bool EnablePimEntry;
+
+		wxCheckBox *SafeguardCheckBox;
+		wxStaticText *SafeguardPasswordStaticText;
+		wxTextCtrl *SafeguardPasswordTextCtrl;
+		wxStaticText *ConfirmSafeguardPasswordStaticText;
+		wxTextCtrl *ConfirmSafeguardPasswordTextCtrl;
 	};
 }
 

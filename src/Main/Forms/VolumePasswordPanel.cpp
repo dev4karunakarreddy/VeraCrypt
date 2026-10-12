@@ -18,8 +18,10 @@
 
 namespace VeraCrypt
 {
-	VolumePasswordPanel::VolumePasswordPanel (wxWindow* parent, MountOptions* options, shared_ptr <VolumePassword> password, shared_ptr <KeyfileList> keyfiles, bool enableCache, bool enablePassword, bool enableKeyfiles, bool enableConfirmation, bool enablePkcs5Prf, bool isMountPassword, const wxString &passwordLabel)
-		: VolumePasswordPanelBase (parent), TopOwnerParent(NULL), Keyfiles (new KeyfileList), EnablePimEntry (true)
+	VolumePasswordPanel::VolumePasswordPanel (wxWindow* parent, MountOptions* options, shared_ptr <VolumePassword> password, shared_ptr <KeyfileList> keyfiles, bool enableCache, bool enablePassword, bool enableKeyfiles, bool enableConfirmation, bool enablePkcs5Prf, bool isMountPassword, const wxString &passwordLabel, bool enableSafeguard)
+		: VolumePasswordPanelBase (parent), TopOwnerParent(NULL), Keyfiles (new KeyfileList), EnablePimEntry (true),
+		SafeguardCheckBox (NULL), SafeguardPasswordStaticText (NULL), SafeguardPasswordTextCtrl (NULL),
+		ConfirmSafeguardPasswordStaticText (NULL), ConfirmSafeguardPasswordTextCtrl (NULL)
 	{
 		size_t maxPasswordLength = CmdLine->ArgUseLegacyPassword? VolumePassword::MaxLegacySize : VolumePassword::MaxSize;
 		if (keyfiles)
@@ -80,6 +82,38 @@ namespace VeraCrypt
 		Pkcs5PrfChoice->Show (enablePkcs5Prf);
 		HeaderWipeCountText->Show (enablePkcs5Prf && !isMountPassword);
 		HeaderWipeCount->Show (enablePkcs5Prf && !isMountPassword);
+
+		if (enableConfirmation && enableSafeguard)
+		{
+			SafeguardCheckBox = new wxCheckBox (this, wxID_ANY, LangString["SAFEGUARD_CHECKBOX"]);
+			GridBagSizer->Add (SafeguardCheckBox, wxGBPosition (12, 1), wxGBSpan (1, 2), wxTOP|wxBOTTOM|wxLEFT|wxALIGN_CENTER_VERTICAL, 5);
+			SafeguardCheckBox->Connect (wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler (VolumePasswordPanel::OnSafeguardCheckBoxClick), NULL, this);
+
+			SafeguardPasswordStaticText = new wxStaticText (this, wxID_ANY, LangString["SAFEGUARD_PASSWORD"]);
+			SafeguardPasswordStaticText->Wrap (-1);
+			GridBagSizer->Add (SafeguardPasswordStaticText, wxGBPosition (13, 0), wxGBSpan (1, 1), wxBOTTOM|wxRIGHT|wxALIGN_CENTER_VERTICAL|wxALIGN_RIGHT, 5);
+
+			SafeguardPasswordTextCtrl = new wxTextCtrl (this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PASSWORD);
+			SafeguardPasswordTextCtrl->SetMaxLength (maxPasswordLength);
+			SafeguardPasswordTextCtrl->SetMinSize (wxSize (232, -1));
+			GridBagSizer->Add (SafeguardPasswordTextCtrl, wxGBPosition (13, 1), wxGBSpan (1, 2), wxBOTTOM|wxEXPAND, 5);
+			SafeguardPasswordTextCtrl->Connect (wxEVT_COMMAND_TEXT_UPDATED, wxCommandEventHandler (VolumePasswordPanel::OnTextChanged), NULL, this);
+
+			ConfirmSafeguardPasswordStaticText = new wxStaticText (this, wxID_ANY, LangString["CONFIRM_SAFEGUARD_PASSWORD"]);
+			ConfirmSafeguardPasswordStaticText->Wrap (-1);
+			GridBagSizer->Add (ConfirmSafeguardPasswordStaticText, wxGBPosition (14, 0), wxGBSpan (1, 1), wxBOTTOM|wxRIGHT|wxALIGN_CENTER_VERTICAL|wxALIGN_RIGHT, 5);
+
+			ConfirmSafeguardPasswordTextCtrl = new wxTextCtrl (this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PASSWORD);
+			ConfirmSafeguardPasswordTextCtrl->SetMaxLength (maxPasswordLength);
+			ConfirmSafeguardPasswordTextCtrl->SetMinSize (wxSize (232, -1));
+			GridBagSizer->Add (ConfirmSafeguardPasswordTextCtrl, wxGBPosition (14, 1), wxGBSpan (1, 2), wxBOTTOM|wxEXPAND, 5);
+			ConfirmSafeguardPasswordTextCtrl->Connect (wxEVT_COMMAND_TEXT_UPDATED, wxCommandEventHandler (VolumePasswordPanel::OnTextChanged), NULL, this);
+
+			SafeguardPasswordStaticText->Show (false);
+			SafeguardPasswordTextCtrl->Show (false);
+			ConfirmSafeguardPasswordStaticText->Show (false);
+			ConfirmSafeguardPasswordTextCtrl->Show (false);
+		}
 
 		if (EnablePimEntry && options && options->Pim > 0)
 		{
@@ -162,6 +196,8 @@ namespace VeraCrypt
 		Pkcs5PrfChoice->Disconnect (wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler (VolumePasswordPanel::OnPkcs5PrfChoiceSelected), nullptr, this);
 		WipeTextCtrl (PasswordTextCtrl);
 		WipeTextCtrl (ConfirmPasswordTextCtrl);
+		if (SafeguardPasswordTextCtrl) WipeTextCtrl (SafeguardPasswordTextCtrl);
+		if (ConfirmSafeguardPasswordTextCtrl) WipeTextCtrl (ConfirmSafeguardPasswordTextCtrl);
 	}
 
 	void VolumePasswordPanel::AddKeyfile (shared_ptr <Keyfile> keyfile)
@@ -414,6 +450,12 @@ namespace VeraCrypt
 		if (VolumePimTextCtrl->IsShown())
 			DisplayPassword (visible, &VolumePimTextCtrl, 3);
 
+		if (SafeguardPasswordTextCtrl && SafeguardPasswordTextCtrl->IsShown())
+			DisplayPassword (visible, &SafeguardPasswordTextCtrl, 13);
+
+		if (ConfirmSafeguardPasswordTextCtrl && ConfirmSafeguardPasswordTextCtrl->IsShown())
+			DisplayPassword (visible, &ConfirmSafeguardPasswordTextCtrl, 14);
+
 		OnUpdate();
 	}
 
@@ -518,6 +560,74 @@ namespace VeraCrypt
 			layoutParent->Layout();
 			layoutParent->Fit();
 			OnUpdate();
+		}
+	}
+
+	void VolumePasswordPanel::OnSafeguardCheckBoxClick (wxCommandEvent& event)
+	{
+		bool checked = event.IsChecked();
+		if (SafeguardPasswordStaticText) SafeguardPasswordStaticText->Show (checked);
+		if (SafeguardPasswordTextCtrl) SafeguardPasswordTextCtrl->Show (checked);
+		if (ConfirmSafeguardPasswordStaticText) ConfirmSafeguardPasswordStaticText->Show (checked);
+		if (ConfirmSafeguardPasswordTextCtrl) ConfirmSafeguardPasswordTextCtrl->Show (checked);
+
+		if (!checked)
+		{
+			WipeTextCtrl (SafeguardPasswordTextCtrl);
+			WipeTextCtrl (ConfirmSafeguardPasswordTextCtrl);
+			SafeguardPasswordTextCtrl->Clear();
+			ConfirmSafeguardPasswordTextCtrl->Clear();
+		}
+		else
+			SetPasswordVisible (DisplayPasswordCheckBox->IsChecked());
+
+		Fit();
+		Layout();
+		wxWindow* top = wxGetTopLevelParent (this);
+		if (top)
+		{
+			top->Fit();
+			top->Layout();
+		}
+		else if (TopOwnerParent)
+		{
+			TopOwnerParent->Fit();
+			TopOwnerParent->Layout();
+		}
+		else if (GetParent())
+		{
+			GetParent()->Fit();
+			GetParent()->Layout();
+		}
+		OnUpdate();
+	}
+
+	bool VolumePasswordPanel::IsSafeguardSelected () const
+	{
+		return SafeguardCheckBox && SafeguardCheckBox->IsChecked();
+	}
+
+	shared_ptr <VolumePassword> VolumePasswordPanel::GetSafeguardPassword (bool bForceLegacyPassword) const
+	{
+		if (SafeguardCheckBox && SafeguardCheckBox->IsChecked() && SafeguardPasswordTextCtrl)
+			return GetPassword (SafeguardPasswordTextCtrl, bForceLegacyPassword);
+		return shared_ptr <VolumePassword> ();
+	}
+
+	bool VolumePasswordPanel::SafeguardPasswordsMatch () const
+	{
+		if (!SafeguardCheckBox || !SafeguardCheckBox->IsChecked())
+			return true;
+		if (!SafeguardPasswordTextCtrl || !ConfirmSafeguardPasswordTextCtrl)
+			return true;
+		try
+		{
+			shared_ptr <VolumePassword> password = GetPassword (SafeguardPasswordTextCtrl);
+			return !password->IsEmpty() && *password == *GetPassword (ConfirmSafeguardPasswordTextCtrl);
+		}
+		catch (PasswordException&)
+		{
+			return false;
 		}
 	}
 }

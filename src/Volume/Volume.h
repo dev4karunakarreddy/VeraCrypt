@@ -119,6 +119,7 @@ namespace VeraCrypt
 	protected:
 		void CheckProtectedRange (uint64 writeHostOffset, uint64 writeLength);
 		void ValidateState () const;
+		void WipeVolumeHost ();
 
 		shared_ptr <EncryptionAlgorithm> EA;
 		shared_ptr <VolumeHeader> Header;

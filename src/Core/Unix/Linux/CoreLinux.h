@@ -28,6 +28,7 @@ namespace VeraCrypt
 		virtual shared_ptr <VolumeInfo> DismountVolume (shared_ptr <VolumeInfo> mountedVolume, bool ignoreOpenFiles = false, bool syncVolumeInfo = false);
 		virtual shared_ptr <VolumeInfo> EmergencyDismountVolume (shared_ptr <VolumeInfo> mountedVolume);
 		virtual HostDeviceList GetHostDevices (bool pathListOnly = false) const;
+		virtual bool IsSlotNumberAvailable (VolumeSlotNumber slotNumber) const;
 
 	protected:
 		virtual DevicePath AttachFileToLoopDevice (const FilePath &filePath, bool readOnly) const;

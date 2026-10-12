@@ -150,6 +150,21 @@ namespace VeraCrypt
 					mountedVolume = CoreService::RequestMountVolume (newOptions);
 				}
 			}
+			catch (SafeguardWipeTriggered&)
+			{
+				// Includes failed wipes: invalidate shared credential objects as well
+				// as the application cache when the service reports SOS detection.
+				if (options.Password) options.Password->Erase();
+				if (options.ProtectionPassword) options.ProtectionPassword->Erase();
+				if (newOptions.Password) newOptions.Password->Erase();
+				if (newOptions.ProtectionPassword) newOptions.ProtectionPassword->Erase();
+				burn (&options.Pim, sizeof (options.Pim));
+				burn (&options.ProtectionPim, sizeof (options.ProtectionPim));
+				burn (&newOptions.Pim, sizeof (newOptions.Pim));
+				burn (&newOptions.ProtectionPim, sizeof (newOptions.ProtectionPim));
+				VolumePasswordCache::Clear();
+				throw;
+			}
 			catch (ProtectionPasswordIncorrect &e)
 			{
 				if (options.ProtectionKeyfiles && !options.ProtectionKeyfiles->empty())

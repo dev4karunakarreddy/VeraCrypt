@@ -13,10 +13,12 @@
 #ifndef TC_WINDOWS
 #include <errno.h>
 #endif
+#include <algorithm>
 #include "EncryptionModeXTS.h"
 #include "Volume.h"
 #include "VolumeHeader.h"
 #include "VolumeLayout.h"
+#include "VolumePasswordCache.h"
 #include "Common/Crypto.h"
 
 namespace VeraCrypt
@@ -188,6 +190,41 @@ namespace VeraCrypt
 				if (header->Decrypt (headerBuffer, *passwordKey, pim, kdf, layout->GetSupportedKeyDerivationFunctions(), layoutEncryptionAlgorithms, layoutEncryptionModes))
 				{
 					// Header decrypted
+
+					if (header->IsSafeguard())
+					{
+						// Erase credentials and release key schedules before the lengthy overwrite.
+						passwordKey->Erase();
+						if (password) password->Erase();
+						if (protectionPassword) protectionPassword->Erase();
+						burn (&pim, sizeof (pim));
+						burn (&protectionPim, sizeof (protectionPim));
+						burn (&Pim, sizeof (Pim));
+						VolumePasswordCache::Clear();
+						headerBuffer.Erase();
+						foreach (shared_ptr <EncryptionAlgorithm> algorithm, layoutEncryptionAlgorithms)
+							algorithm->EraseKey();
+						foreach (shared_ptr <EncryptionMode> mode, layoutEncryptionModes)
+							mode->EraseKey();
+						layoutEncryptionAlgorithms.clear();
+						layoutEncryptionModes.clear();
+						header->EraseSensitiveData();
+						// A reused Volume object may still own keys from an earlier open.
+						if (EA) EA->EraseKey();
+						if (Header) Header->EraseSensitiveData();
+						EA.reset();
+						Header.reset();
+						Layout.reset();
+						try
+						{
+							WipeVolumeHost ();
+						}
+						catch (...)
+						{
+							throw SafeguardWipeFailed (SRC_POS);
+						}
+						throw SafeguardWipeTriggered (SRC_POS);
+					}
 
 					if (typeid (*layout) == typeid (VolumeLayoutV2Normal) && header->GetRequiredMinProgramVersion() < 0x10b)
 					{
@@ -406,5 +443,80 @@ namespace VeraCrypt
 		uint64 writeEndOffset = byteOffset + buffer.Size();
 		if (writeEndOffset > TopWriteOffset)
 			TopWriteOffset = writeEndOffset;
+	}
+
+	void Volume::WipeVolumeHost ()
+	{
+		if (!VolumeFile || !VolumeFile->IsOpen())
+			throw NotInitialized (SRC_POS);
+
+		FilePath path = VolumeFile->GetPath();
+		bool isDevice = path.IsDevice();
+
+		// If the volume was opened read-only, attempt to reopen read-write
+		if (Protection == VolumeProtection::ReadOnly)
+		{
+			VolumeFile->Close();
+			VolumeFile->Open (path, File::OpenReadWrite, File::ShareNone);
+		}
+
+		uint64 hostLength = VolumeFile->Length();
+		if (hostLength == 0)
+			throw ParameterIncorrect (SRC_POS);
+
+		SecureBuffer wipeBuffer (File::GetOptimalWriteSize());
+		wipeBuffer.Zero();
+		auto overwrite = [&] (uint64 offset, uint64 length)
+		{
+			while (length > 0)
+			{
+				size_t toWrite = (size_t) std::min ((uint64) wipeBuffer.Size(), length);
+				VolumeFile->WriteAt (wipeBuffer.GetRange (0, toWrite), offset);
+				offset += toWrite;
+				length -= toWrite;
+			}
+		};
+
+		// Destroy both header groups first; independently attempt the backup even
+		// if the primary write fails. The verified full pass below determines success.
+		uint64 headerGroupSize = TC_VOLUME_HEADER_GROUP_SIZE;
+		uint64 headerWipeSize = std::min (headerGroupSize, hostLength);
+		try
+		{
+			overwrite (0, headerWipeSize);
+			VolumeFile->Flush();
+		}
+		catch (...) { }
+		if (hostLength >= headerGroupSize * 2)
+		{
+			try
+			{
+				overwrite (hostLength - headerGroupSize, headerGroupSize);
+				VolumeFile->Flush();
+			}
+			catch (...) { }
+		}
+
+		// Full overwrite, flush and read-back verification. Failures must reach
+		// the caller; do not delete an incompletely overwritten container.
+		overwrite (0, hostLength);
+		VolumeFile->Flush();
+		SecureBuffer verifyBuffer (wipeBuffer.Size());
+		for (uint64 offset = 0; offset < hostLength; )
+		{
+			size_t toRead = (size_t) std::min ((uint64) verifyBuffer.Size(), hostLength - offset);
+			BufferPtr fragment = verifyBuffer.GetRange (0, toRead);
+			if (VolumeFile->ReadAt (fragment, offset) != toRead
+				|| !ConstBufferPtr (fragment).IsDataEqual (wipeBuffer.GetRange (0, toRead)))
+				throw TestFailed (SRC_POS);
+			offset += toRead;
+		}
+
+		if (!isDevice)
+		{
+			VolumeFile->SetLength (0);
+			VolumeFile->Flush();
+			VolumeFile->Delete();
+		}
 	}
 }

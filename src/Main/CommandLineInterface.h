@@ -80,6 +80,7 @@ namespace VeraCrypt
 		int ArgNewPim;
 		bool ArgNoHiddenVolumeProtection;
 		shared_ptr <VolumePassword> ArgPassword;
+		shared_ptr <VolumePassword> ArgSafeguardPassword;
 		int ArgPim;
 		bool ArgQuick;
 		FilesystemPath ArgRandomSourcePath;

@@ -41,6 +41,7 @@ namespace VeraCrypt
 		virtual uint64 GetSectorOffset () const { return SectorOffset; }
 		virtual bool IsKeySet () const { return KeySet; }
 		virtual void SetKey (const ConstBufferPtr &key) = 0;
+		virtual void EraseKey ();
 		virtual void SetCiphers (const CipherList &ciphers) { Ciphers = ciphers; }
 		virtual void SetSectorOffset (int64 offset) { SectorOffset = offset; }
 

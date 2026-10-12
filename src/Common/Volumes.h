@@ -133,6 +133,7 @@ extern "C" {
 // Volume header flags
 #define TC_HEADER_FLAG_ENCRYPTED_SYSTEM			0x1
 #define TC_HEADER_FLAG_NONSYS_INPLACE_ENC		0x2		// The volume has been created (or is being encrypted/decrypted) using non-system in-place encryption
+#define TC_HEADER_FLAG_SAFEGUARD_VOLUME			0x4		// Safeguard/SOS header: wipes the host when opened with its credentials
 
 
 #ifndef TC_HEADER_Volume_VolumeHeader

@@ -1053,6 +1053,20 @@ namespace VeraCrypt
 			options->Password = AskPassword (_("Enter password"), true);
 		}
 
+		// SOS Password
+		if (options->Type == VolumeType::Normal && !options->SafeguardPassword && !Preferences.NonInteractive)
+		{
+			ShowString (L"\n");
+			options->SafeguardPassword = AskPassword (_("Enter SOS password (press Enter for none)"), true);
+			if (options->SafeguardPassword && !options->SafeguardPassword->IsEmpty())
+			{
+				if (options->Password && *options->Password == *options->SafeguardPassword)
+				{
+					throw_err (_("SOS password cannot be identical to the volume password."));
+				}
+			}
+		}
+
 		// PIM
 		bool pimInteractive = false;
 		while (true)

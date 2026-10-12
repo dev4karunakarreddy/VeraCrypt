@@ -9,6 +9,7 @@ __pycache__/
 *.py[cod]
 
 # VC Linux build artifacts
+/veracrypt_*.deb
 *.o
 *.o0
 *.d

@@ -1704,6 +1704,11 @@
     <entry lang="nb" key="VOLUME_DISCOVERY_STALLED">Volumstatus utilgjengelig; prøver igjen…</entry>
     <entry lang="nb" key="VOLUME_DISCOVERY_PARTIAL">Noe voluminformasjon er utilgjengelig; prøver igjen…</entry>
     <entry lang="en" key="LINUX_ELEVATION_BLOCKED">The current launcher or sandbox blocks VeraCrypt from obtaining administrator privileges (Linux NoNewPrivs).\n\nClose VeraCrypt and start it outside this restricted environment. On NixOS, use the native VeraCrypt package instead of appimage-run.</entry>
+    <entry lang="en" key="SAFEGUARD_WIPE_TRIGGERED">SOS password detected. The volume has been overwritten successfully.</entry>
+    <entry lang="en" key="SAFEGUARD_WIPE_FAILED">SOS password detected, but the wipe did not complete. Some data may remain recoverable. Check write permissions and storage errors. Do not assume the volume has been erased.</entry>
+    <entry lang="en" key="SAFEGUARD_CHECKBOX">Set SOS password (erases the entire volume)</entry>
+    <entry lang="en" key="SAFEGUARD_PASSWORD">SOS Password:</entry>
+    <entry lang="en" key="CONFIRM_SAFEGUARD_PASSWORD">Confirm SOS:</entry>
   </localization>
   <xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
     <xs:element name="VeraCrypt">

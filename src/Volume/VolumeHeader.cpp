@@ -44,6 +44,15 @@ namespace VeraCrypt
 		Init();
 	}
 
+	void VolumeHeader::EraseSensitiveData ()
+	{
+		DataAreaKey.Erase();
+		if (EA) EA->EraseKey();
+		EA.reset();
+		Pkcs5.reset();
+		Init();
+	}
+
 	void VolumeHeader::Init ()
 	{
 		VolumeKeyAreaCrc32 = 0;
@@ -78,6 +87,7 @@ namespace VeraCrypt
 		VolumeCreationTime = 0;
 		HiddenVolumeDataSize = (options.Type == VolumeType::Hidden ? options.VolumeDataSize : 0);
 		VolumeDataSize = options.VolumeDataSize;
+		Flags = options.Flags;
 
 		EncryptedAreaStart = options.VolumeDataStart;
 		EncryptedAreaLength = options.VolumeDataSize;

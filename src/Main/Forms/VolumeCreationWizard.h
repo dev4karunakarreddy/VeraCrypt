@@ -85,6 +85,7 @@ namespace VeraCrypt
 		VolumeHostType::Enum SelectedVolumeHostType;
 		VolumeType::Enum SelectedVolumeType;
 		shared_ptr <VolumePassword> Password;
+		shared_ptr <VolumePassword> SafeguardPassword;
 		shared_ptr <VolumePassword> OuterPassword;
 		int Pim;
 		int OuterPim;

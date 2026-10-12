@@ -16,10 +16,10 @@
 
 namespace VeraCrypt
 {
-	VolumePasswordWizardPage::VolumePasswordWizardPage (wxPanel* parent, shared_ptr <VolumePassword> password, shared_ptr <KeyfileList> keyfiles, bool enableConfirmation)
+	VolumePasswordWizardPage::VolumePasswordWizardPage (wxPanel* parent, shared_ptr <VolumePassword> password, shared_ptr <KeyfileList> keyfiles, bool enableConfirmation, bool enableSafeguard)
 		: VolumePasswordWizardPageBase (parent), ConfirmationMode (enableConfirmation)
 	{
-		PasswordPanel = new VolumePasswordPanel (this, NULL, password, keyfiles, false, true, true, enableConfirmation, !enableConfirmation, !enableConfirmation);
+		PasswordPanel = new VolumePasswordPanel (this, NULL, password, keyfiles, false, true, true, enableConfirmation, !enableConfirmation, !enableConfirmation, wxString(), enableSafeguard);
 		PasswordPanel->UpdateEvent.Connect (EventConnector <VolumePasswordWizardPage> (this, &VolumePasswordWizardPage::OnPasswordPanelUpdate));
 
 		PasswordPanelSizer->Add (PasswordPanel, 1, wxALL | wxEXPAND);
@@ -35,10 +35,17 @@ namespace VeraCrypt
 		if (ConfirmationMode && !PasswordPanel->PasswordsMatch())
 			return false;
 
+		if (ConfirmationMode && !PasswordPanel->SafeguardPasswordsMatch())
+			return false;
+
 		try
 		{
 			shared_ptr <KeyfileList> keyfiles (GetKeyfiles());
 			shared_ptr <VolumePassword> password (GetPassword());
+			shared_ptr <VolumePassword> safeguardPassword (GetSafeguardPassword());
+
+			if (safeguardPassword && password && !safeguardPassword->IsEmpty() && *safeguardPassword == *password)
+				return false;
 
 			return (password && !GetPassword()->IsEmpty()) || (keyfiles && !keyfiles->empty());
 		}

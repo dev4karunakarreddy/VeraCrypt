@@ -37,9 +37,12 @@ namespace VeraCrypt
 	TC_EXCEPTION (VolumeEncryptionNotCompleted); \
 	TC_EXCEPTION (VolumeHostInUse); \
 	TC_EXCEPTION (VolumeProtected); \
-	TC_EXCEPTION (VolumeReadOnly);
+	TC_EXCEPTION (VolumeReadOnly); \
+	TC_EXCEPTION (SafeguardWipeTriggered); \
+	TC_EXCEPTION_NODECL (SafeguardWipeFailed);
 
 	TC_EXCEPTION_SET;
+	TC_EXCEPTION_DECL (SafeguardWipeFailed, SafeguardWipeTriggered);
 
 #undef TC_EXCEPTION
 }

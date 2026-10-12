@@ -130,7 +130,8 @@ namespace VeraCrypt
 		for (VolumeSlotNumber slotNumber = startFrom; slotNumber <= GetLastSlotNumber(); ++slotNumber)
 		{
 			if (usedSlotNumbers.find (slotNumber) == usedSlotNumbers.end()
-				&& IsMountPointAvailable (SlotNumberToMountPoint (slotNumber)))
+				&& IsMountPointAvailable (SlotNumberToMountPoint (slotNumber))
+				&& IsSlotNumberAvailable (slotNumber))
 				return slotNumber;
 		}
 #ifdef TC_WINDOWS

@@ -400,6 +400,29 @@ namespace VeraCrypt
 		}
 
 		// Devices without a UUID, created by earlier versions, are included only if requested
+		// Slot selection must detect mappings regardless of which volume owns them.
+		bool IsDeviceMapperDevicePresent (const string &name)
+		{
+			DIR *sysBlock = opendir ("/sys/block");
+			if (!sysBlock)
+				return FilesystemPath ("/dev/mapper/" + name).IsBlockDevice();
+			finally_do_arg (DIR *, sysBlock, { closedir (finally_arg); });
+
+			struct dirent *entry;
+			while ((entry = readdir (sysBlock)) != nullptr)
+			{
+				const string kernelName = entry->d_name;
+				if (kernelName.find ("dm-") != 0)
+					continue;
+
+				string deviceName;
+				if (ReadSysfsAttribute ("/sys/block/" + kernelName + "/dm/name", deviceName)
+					&& deviceName == name)
+					return true;
+			}
+			return false;
+		}
+
 		DeviceOwnership::Enum GetDeviceMapperOwnership (const VolumeInfo &volume, const string &name, bool includeLegacy, DeviceMapperDevice &device)
 		{
 			const string uuid = GetDeviceMapperUuid (volume.SerialInstanceNumber, name);
@@ -894,6 +917,19 @@ namespace VeraCrypt
 		{
 			mountedVolume->VirtualDevice = DevicePath();
 		}
+	}
+
+	bool CoreLinux::IsSlotNumberAvailable (VolumeSlotNumber slotNumber) const
+	{
+		if (!CoreUnix::IsSlotNumberAvailable (slotNumber))
+			return false;
+
+		stringstream nativeDevName;
+		nativeDevName << "veracrypt" << slotNumber;
+		if (IsDeviceMapperDevicePresent (nativeDevName.str()))
+			return false;
+
+		return true;
 	}
 
 	HostDeviceList CoreLinux::GetHostDevices (bool pathListOnly) const

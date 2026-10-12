@@ -21,11 +21,12 @@ namespace VeraCrypt
 	class VolumePasswordWizardPage : public VolumePasswordWizardPageBase
 	{
 	public:
-		VolumePasswordWizardPage (wxPanel* parent, shared_ptr <VolumePassword> password, shared_ptr <KeyfileList> keyfiles, bool enableConfirmation = true);
+		VolumePasswordWizardPage (wxPanel* parent, shared_ptr <VolumePassword> password, shared_ptr <KeyfileList> keyfiles, bool enableConfirmation = true, bool enableSafeguard = false);
 		~VolumePasswordWizardPage ();
 
 		shared_ptr <KeyfileList> GetKeyfiles () const { return PasswordPanel->GetKeyfiles(); }
 		shared_ptr <VolumePassword> GetPassword () const { return PasswordPanel->GetPassword(); }
+		shared_ptr <VolumePassword> GetSafeguardPassword () const { return PasswordPanel->GetSafeguardPassword(); }
 		void EnableUsePim () { PasswordPanel->EnableUsePim (); }
 		bool IsPimSelected () const { return PasswordPanel->IsUsePimChecked ();}
 		void SetPimSelected (bool selected) const { PasswordPanel->SetUsePimChecked (selected);}

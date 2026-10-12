@@ -39,6 +39,7 @@ namespace VeraCrypt
 		shared_ptr <EncryptionAlgorithm> EA;
 		bool Quick;
 		bool EMVSupportEnabled;
+		shared_ptr <VolumePassword> SafeguardPassword;
 
 		struct FilesystemType
 		{

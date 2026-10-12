@@ -46,6 +46,7 @@ namespace VeraCrypt
 		virtual bool IsModeSupported (const EncryptionMode &mode) const;
 		virtual bool IsModeSupported (const shared_ptr <EncryptionMode> mode) const;
 		virtual void SetKey (const ConstBufferPtr &key);
+		void EraseKey ();
             #ifdef WOLFCRYPT_BACKEND
 		virtual void SetKeyXTS (const ConstBufferPtr &key);
             #endif
